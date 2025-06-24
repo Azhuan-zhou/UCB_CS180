@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <title>CS180: Project4</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        header {
+            background-color: #4682b4;
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5em;
+        }
+
+        header h2 {
+            margin: 10px 0;
+            font-size: 1.5em;
+            font-weight: 400;
+        }
+        .centered {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h3 {
+            text-align: center;
+        }
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .image-grid img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #4682b4;
+            color: white;
+            margin-top: 20px;
+        }
+    h1 {
+        text-align: center;
+    }
+    h2 {
+        text-align: center;
+    }
+    p {
+        margin-left: 15vh;
+        margin-right: 15vh;
+    }
+    .image-row {
+        display: flex;
+        justify-content: center; 
+        gap: 10px; 
+    }
+    .image-row figure {
+        text-align: center; 
+    }
+    .image-row img {
+        width: 400px; 
+        height: auto;
+    }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>CS180: Project4</h1>
+        <h2>[Auto] Stitching Photo Mosaics</h2>
+        by Shenghan Zhou
+    </header>
+    <div class="container">
+        <section>
+            <h1>Part A: IMAGE WARPING and MOSAICING</h1>
+            <h2>Overview</h2>
+            <p>In the first part of Project 4, I started by capturing photos with a fixed center of projection and calculating the homography matrix using least squares to align the images. This enabled me to warp images toward a reference, perform image rectification, and blend them seamlessly into a mosaic using weighted averaging techniques.
+            </p>
+            <h2>Shoot the Pictures</h2>
+            <p>I took the following pictures for image rectification and blended them into a mosaic.</p>
+            <div class="image-row">
+                <figure>
+                    <img src="../code/images/laptop.png" alt="Image 1">
+                    <figcaption>my laptop</figcaption>
+                </figure>
+                <figure>
+                    <img src="../code/images/slide.png" alt="Image 2">
+                    <figcaption>one slide in CS180</figcaption>
+                </figure>
+            </div>
+            <p>Library</p>
+            <div class="image-row">
+                <figure>
+                    <img src="../code/images/library1.png" alt="Image 1">
+                </figure>
+                <figure>
+                    <img src="../code/images/library2.png" alt="Image 2">
+                
+                </figure>
+            </div>
+            <p>CS180 lecture</p>
+            <div class="image-row">
+                <figure>
+                    <img src="../code/images/lecture1.png" alt="Image 1">
+                </figure>
+                <figure>
+                    <img src="../code/images/lecture2.png" alt="Image 2">
+                
+                </figure>
+            </div>
+            <p>My garden</p>
+            <div class="image-row">
+                <figure>
+                    <img src="../code/images/garden1.png" alt="Image 1">
+                </figure>
+                <figure>
+                    <img src="../code/images/garden2.png" alt="Image 2">
+                
+                </figure>
+            </div>
+            <h2>Recover Homographies</h2>
+            <p>To align images, we need to recover the homography transformation, represented as  \(p{\prime} = Hp\), where  H  is a 3x3 matrix with eight degrees of freedom. The function to compute this can be written as:</p>
+            <div class="centered">
+                <pre><code>
+        H = computeH(im1_pts, im2_pts)
+                </code></pre>
+            </div>
+            <p>H can be described as:</p>
+            \[
+H =
+\begin{bmatrix}
+h_1 & h_2 & h_3 \\
+h_4 & h_5 & h_6 \\
+h_7 & h_8 & 1 \\
+\end{bmatrix}
+\]
+            <p>According to  \(p{\prime} = Hp\)</p>
+\[
+\begin{bmatrix}
+w p_1{\prime} \\
+w p_2{\prime} \\
+w
+\end{bmatrix}
+=
+\begin{bmatrix}
+h_1 & h_2 & h_3 \\
+h_4 & h_5 & h_6 \\
+h_7 & h_8 & 1
+\end{bmatrix}
+\begin{bmatrix}
+p_1 \\
+p_2 \\
+1
+\end{bmatrix}
+
+\]
+            <p>After we expand the formulation above, we can get:</p>
+            \[
+\begin{cases}
+h_1 p_1 + h_2 p_2 + h_3 - h_7 p_1 p_1{\prime} - h_8 p_2 p_1{\prime} = p_1{\prime} \\
+h_4 p_1 + h_5 p_2 + h_6 - h_7 p_1 p_2{\prime} - h_8 p_2 p_2{\prime} = p_2{\prime}
+\end{cases}
+\]
+\[
+\begin{bmatrix}
+p_1 & p_2 & 1 & 0 & 0 & 0 & -p_1 p_1{\prime} & -p_2 p_1{\prime} \\
+0 & 0 & 0 & p_1 & p_2 & 1 & -p_1 p_2{\prime} & -p_2 p_2{\prime}
+\end{bmatrix}
+\begin{bmatrix}
+h_1 \\
+h_2 \\
+h_3 \\
+h_4 \\
+h_5 \\
+h_6 \\
+h_7 \\
+h_8
+\end{bmatrix}
+=
+\begin{bmatrix}
+p_1{\prime} \\
+p_2{\prime}
+\end{bmatrix}
+\]
+            <p>Thus, if we have a seris of keypoints, we can compute homography by least squares</p>
+            <section>
+            <h2>Warp the Images</h2>
+            <section>
+            <p>I use inverse warping to align the images to their reference image. First, I compute the inverse of the homography matrix (H). Then, I map the canvas pixels back to the input image using the inverse of H. Finally, I use <code>scipy.interpolate.griddata</code> to interpolate the pixel values.</p>
+        </section>
+            <h2>Image Rectification</h2>
+            <section>
+                <p>In order to rectify image, I firstly pre-define four keypoints and then compute the homography. Finally, I warp the image to the canvas.</p>
+            <div class="image-row">
+                <figure>
+                    <img src="../code/images/laptop.png">
+                </figure>
+                <figure>
+                    <img src="../code/images/re.png">
+                </figure>
+            </div>
+            <div class="image-row">
+                <figure>
+                    <img src="../code/images/slide.png">
+                </figure>
+                <figure>
+                    <img src="../code/images/re2.png">
+                </figure>
+            </div>
+            </section>
+            <h2>Blend the images into a mosaic</h2>
+            <p>To create a mosaic, I select a reference image from the set and use inverse warping to align the other images to it. Next, I compute the maximum canvas size and apply distance transformation to create a mask. The alpha value is calculated as the ratio of the distance to the nearest non-overlapping pixel to the overlap length. To blend the images seamlessly, I use Laplacian Pyramid blending, as implemented in Project 2.</p>
+            <h3>Library</h3>
+            <div class="image-row">
+                <figure>
+                    <img src="../code/images/library1.png">
+                </figure>
+                <figure>
+                    <img src="../code/images/mask_library_1.png">
+                    <figcaption>mask</figcaption>
+                </figure>
+            </div>
+            <div class="image-row">
+                <figure>
+                    <img src="../code/images/library2.png">
+                </figure>
+                <figure>
+                    <img src="../code/images/mask_library_2.png">
+                    <figcaption>mask</figcaption>
+                </figure>
+            </div>
+            <figure>
+                <img src="../code/images/mosaic1.png" style="width: 600px; height: auto; display: block; margin: 0 auto;">
+            </figure>
+            <h3>CS180 classroom</h3>
+            <div class="image-row">
+                <figure>
+                    <img src="../code/images/lecture1.png">
+                </figure>
+                <figure>
+                    <img src="../code/images/mask_lecture_1.png">
+                    <figcaption>mask</figcaption>
+                </figure>
+            </div>
+            <div class="image-row">
+                <figure>
+                    <img src="../code/images/lecture2.png" >
+                </figure>
+                <figure>
+                    <img src="../code/images/mask_lecture_2.png">
+                    <figcaption>mask</figcaption>
+                </figure>
+            </div>
+            <figure>
+                <img src="../code/images/mosaic2.png" style="width: 600px; height: auto; display: block; margin: 0 auto;">
+            </figure>
+            <h3>CS180 classroom</h3>
+            <div class="image-row">
+                <figure>
+                    <img src="../code/images/garden1.png">
+                </figure>
+                <figure>
+                    <img src="../code/images/mask_garden_1.png">
+                    <figcaption>mask</figcaption>
+                </figure>
+            </div>
+            <div class="image-row">
+                <figure>
+                    <img src="../code/images/garden2.png" >
+                </figure>
+                <figure>
+                    <img src="../code/images/mask_garden_2.png">
+                    <figcaption>mask</figcaption>
+                </figure>
+            </div>
+            <figure>
+                <img src="../code/images/mosaic3.png" style="width: 600px; height: auto; display: block; margin: 0 auto;">
+            </figure>
+        </section>
+        <hr style="width: 80%; border: 1px solid black; margin: 5px auto;">
+        <section>
+            <h1>Part B: FEATURE MATCHING for AUTOSTITCHING</h1>
+        </section>
+        <section>
+            <h2>Overview</h2>
+            <p>In this project, I aimed to automate image stitching into a mosaic while deepening my understanding of implementing research papers. Following the steps outlined in “Multi-Image Matching using Multi-Scale Oriented Patches” by Brown et al., I first detected corner features using the Harris Interest Point Detector and refined them through Adaptive Non-Maximal Suppression. I then extracted 8x8 feature descriptors from larger 40x40 windows, ensuring proper normalization for consistency. To match features between images, I applied Lowe’s method of thresholding the ratio between the first and second nearest neighbors, filtering out unreliable matches. Finally, I computed a robust homography using a 4-point RANSAC algorithm to accurately align the images. </p>
+        </section>
+        <section>
+            <h2>step1: Harris Interest Point</h2>
+            <p>In corner dection, we use the Harris interest point detector.</p>
+            <p>The examples below is the Harris Interest Point of the images:</p>
+            <p>CS180 lecture</p>
+            <div class="image-row">
+                <figure>
+                    <img src="../code/images/lecture1_harris_points.png" alt="Image 1">
+                </figure>
+                <figure>
+                    <img src="../code/images/lecture2_harris_points.png" alt="Image 2">
+                
+                </figure>
+            </div>
+            <p>Library</p>
+            <div class="image-row">
+                <figure>
+                    <img src="../code/images/library1_harris_points.png" alt="Image 1">
+                </figure>
+                <figure>
+                    <img src="../code/images/library1_harris_points.png" alt="Image 2">
+                
+                </figure>
+            </div>
+            <p>My garden</p>
+            <div class="image-row">
+                <figure>
+                    <img src="../code/images/garden1_harris_points.png" alt="Image 1">
+                </figure>
+                <figure>
+                    <img src="../code/images/garden2_harris_points.png" alt="Image 2"> 
+                </figure>
+            </div>
+        </section>
+        <section>
+            <h2>Step2: Adaptive Non-Maximal Suppression</h2>
+            <p>Adaptive Non-Maximal Suppression (ANMS) selects the most prominent features by retaining only the points with the highest corner strength while ensuring they are sufficiently spaced apart. It suppresses weaker points within a certain radius around stronger features, enhancing feature distribution across the image.</p>
+            <p>See the results of ANMS below. The red point is the Harris Interest Point and The blue point is the Harris Interest Point after ANMS</p>
+            <p>CS180 lecture</p>
+            <div class="image-row">
+                <figure>
+                    <img src="../code/images/lecture1_harris_points_ANMS.png" alt="Image 1">
+                </figure>
+                <figure>
+                    <img src="../code/images/lecture2_harris_points_ANMS.png" alt="Image 2">
+                
+                </figure>
+            </div>
+            <p>Library</p>
+            <div class="image-row">
+                <figure>
+                    <img src="../code/images/library1_harris_points_ANMS.png" alt="Image 1">
+                </figure>
+                <figure>
+                    <img src="../code/images/library1_harris_points_ANMS.png" alt="Image 2">
+                </figure>
+            </div>
+            <p>My garden</p>
+            <div class="image-row">
+                <figure>
+                    <img src="../code/images/garden1_harris_points_ANMS.png" alt="Image 1">
+                </figure>
+                <figure>
+                    <img src="../code/images/garden2_harris_points_ANMS.png" alt="Image 2"> 
+                </figure>
+            </div>
+        </section>
+        <section>
+            <h2>Step3: Feature Descriptor Extraction & Feature Matching</h2>
+            <p>
+                The feature extraction process begins by iterating through interest points, extracting a 40x40 pixel patch around each one if it fits within the image boundaries. The patch is then smoothed using a Gaussian filter to reduce noise and resized to an 8x8 patch with anti-aliasing. Next, bias/gain normalization is applied by subtracting the mean and dividing by the standard deviation. The resulting 8x8 patch is flattened into a vector and stored as a feature descriptor. Finally, all descriptors are collected and returned as an array. <br>
+                There is one descriptor of an image show below:
+            </p>
+            <img src="../code/images/feature.png" style="width: 600px; height: auto; display: block; margin: 0 auto;">
+            <p>
+                The feature matching process involves comparing feature descriptors between two images to find corresponding points. For each descriptor in the first image, the Euclidean distance to all descriptors in the second image is calculated. To filter reliable matches, Lowe’s ratio test is applied: the ratio between the distance to the nearest neighbor and the distance to the second nearest neighbor is computed, and only matches where this ratio is below a set threshold are retained. This helps eliminate ambiguous or weak matches, ensuring that the matched features are distinct and likely to correspond between the two images.
+            </p>
+            <p>See the matching results of images below. The red point is the Harris Interest Point after ANMS and The blue point is matched points.
+            <img src="../code/images/lecture_feature_match.png" style="width: 800px; height: auto; display: block; margin: 0 auto;">
+            <img src="../code/images/library_feature_match.png" style="width: 800px; height: auto; display: block; margin: 0 auto;">
+            <img src="../code/images/garden_feature_match.png" style="width: 800px; height: auto; display: block; margin: 0 auto;">
+        </section>
+        <section>
+            <h2>Step4: RANSAC</h2>
+            <p>After selecting prominent features using Adaptive Non-Maximal Suppression (ANMS) and finding correspondences through feature matching, RANSAC (Random Sample Consensus) is applied to estimate a robust homography. The method randomly selects a minimal set of four point correspondences to compute the homography matrix, then applies the matrix to all points to identify inliers—points that fit the model within a set threshold. This process repeats for a fixed number of iterations, with the homography producing the most inliers chosen as the final estimate, effectively minimizing the impact of outliers and ensuring accurate image alignment.</p>
+            <p>Thus, we can automatically compute the homography of images and use it to stitch them together, creating a seamless mosaic.</p>
+            <p>CS180 lecture</p>
+            <div class="image-row">
+                <figure>
+                    <img src="../code/images/mosaic2.png" alt="Image 1">
+                    <figcaption>manual correspondences</figcaption>
+                </figure>
+                <figure>
+                    <img src="../code/images/lecture_mosaic_auto.png" alt="Image 2">
+                    <figcaption>automatic correspondences</figcaption>
+                </figure>
+            </div>
+            <p>Library</p>
+            <div class="image-row">
+                <figure>
+                    <img src="../code/images/mosaic1.png" alt="Image 1">
+                    <figcaption>manual correspondences</figcaption>
+                </figure>
+                <figure>
+                    <img src="../code/images/library_mosaic_auto.png" alt="Image 2">
+                    <figcaption>automatic correspondences</figcaption>
+                </figure>
+            </div>
+            <p>My garden</p>
+            <div class="image-row">
+                <figure>
+                    <img src="../code/images/mosaic3.png" alt="Image 1">
+                    <figcaption>manual correspondences</figcaption>
+                </figure>
+                <figure>
+                    <img src="../code/images/garden_mosaic_auto.png" alt="Image 2"> 
+                    <figcaption>automatic correspondences</figcaption>
+                </figure>
+            </div>
+            <p>The automatic stitching achieves results comparable to manual correspondences, demonstrating the effectiveness of Harris interest points, ANMS, and the RANSAC method.</p>
+        </section>
+        <section>
+            <h2>What have you learned?</h2>
+            <p>Through this project, the coolest thing I have learned if the key techniques in automated image stitching, including feature detection with Harris Interest Points and refinement using ANMS for better distribution. I gained practical experience in extracting normalized feature descriptors and filtering matches using Lowe’s ratio test for reliable correspondences. Applying RANSAC highlighted the importance of robust outlier handling in estimating homography. Overall, I understood how these techniques combine to create seamless mosaics, demonstrating the effectiveness of automated approaches in image alignment and stitching tasks.</p>
+        </section>
+    </div>
+</body>
+</html>

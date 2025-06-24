@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <title>CS180: Neural Radiance Field!</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        header {
+            background-color: #4682b4;
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5em;
+        }
+
+        header h2 {
+            margin: 10px 0;
+            font-size: 1.5em;
+            font-weight: 400;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .image-grid img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #4682b4;
+            color: white;
+            margin-top: 20px;
+        }
+    h1 {
+        text-align: center;
+    }
+    h2 {
+        text-align: center;
+    }
+    h3 {
+        text-align: center;
+    }
+    p {
+        margin-left: 15vh;
+        margin-right: 15vh;
+    }
+    .image-row {
+        display: flex;
+        justify-content: center; 
+        gap: 1px; 
+    }
+    .image-row figure {
+        text-align: center; 
+    }
+    .center-image {
+    display: block;
+    margin: 0 auto;
+    }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>CS180: Neural Radiance Field!</h1>
+        by Shenghan Zhou
+    </header>
+    <div class="container">
+       <h1>Part 1: Fit a Neural Field to a 2D Image</h1>
+       <h2>Model architecture</h2>
+       <p>I built a simple MLP with four hidden layers, following the diagram shown below. The hidden layer dimension is set to 256, and the network consists of 4 layers. The input to the network is the pixel coordinates, and ReLU serves as the activation function between layers. The output layer has a dimension of 3, corresponding to the RGB values of the pixel. To ensure the network output is within the range (0, 1), a Sigmoid activation function is applied at the final layer.</p>
+       <img src="./images/architecture1.png" alt="architecture" class="center-image" height="200px">
+       <p> I train the network using Adam with the learning rate of 0.001, with a batch size of 10,000. Training is performed over 1,000 epochs. When I am training network, I use negative PSNR as the loss.</p>
+       <p>The training PSNR across iterations</p>
+       <img src="../code/results/loss_curve.png" alt="image" class="center-image" height="300px">
+       <h2>Results</h2>
+       <p>I ploted the predicted images across iterations in epoch 1, 100, 300, 800,1500, and 3000</p>
+       <img src="../code/results/infer.png" alt="image" class="center-image" height="120px">
+        <h2>Sphere Las Vegas</h2>
+        <p>I run the optimization on an image of Sphere Las Vegas. The hyperparameter is same as the above configuration.</p>
+        <p>The training PSNR across iterations</p>
+        <img src="../code/results/loss_curve_sphere.png" alt="architecture" class="center-image" height="300px">
+        <p>The predicted images in epoch 1, 100, 300, 800, 1500, 3000</p>
+        <img src="../code/results/infer_sphere.png" alt="image" class="center-image" height="120px">
+        <h2>Hyperparameters Tuning</h2>
+        <p>I varied the level of hidden layer dimension and learning rate to check the effect</p>
+        <h3>Hidden layer dimension: 128</h3>
+        <img src="../code/results/loss_curve(128).png" alt="image" class="center-image" height="300px">
+        <p>From the PSNR curve, the value eventually reaches 26, which is significantly lower compared to the original PSNR of 30. Reducing the hidden layer dimension negatively impacts performance. This is because it make network simple, causing network less powerful.</p>
+        <h3>Learning rate: 0.0001</h3>
+        <img src="../code/results/loss_curve_lr(1e-3).png" alt="image" class="center-image" height="300px">
+        <p>According to the PSNR curve, the value eventually stabilizes at 27.5, which is notably lower than the original PSNR of 30 achieved with a learning rate of 0.001. Reducing the learning rate adversely affects performance, as a smaller learning rate slows down convergence.</p>
+
+        <h1>Part 2: Fit a Neural Radiance Field from Multi-view Images</h1>
+        <h2>Create Rays from Cameras</h2>
+        \[
+        \begin{bmatrix}
+        \mathbf{R}_{3 \times 3} & \mathbf{t} \\
+        \mathbf{0}_{1 \times 3} & 1
+        \end{bmatrix}
+        \]
+        <p>Given a focal length \(f\) and extrinsic matrix (shows above), we can generate rays from the camera. First, the origin of each ray \(r_o\) is set to the camera center \(-R^{-1}t\). To determine the direction of a ray, the pixel coordinates need to be transformed into world coordinates. The pixel coordinates are defined as:</p>
+        $$ \mathbf{p} = \begin{bmatrix} u \\ v \end{bmatrix} $$
+        <p>The intrinsic matrix is defined as</p>:
+        \[
+        \mathbf{K} = 
+        \begin{bmatrix}
+        f & 0 & o_x \\
+        0 & f & o_y \\
+        0 & 0 & 1
+        \end{bmatrix}
+        \]
+        <p>where o_x and o_y are half of image width and image height separately.</p>
+        <p>Now, we can compute camera coordinate by following operation and set depth(s) to 1:</p>
+        \[
+        X_c
+        =
+        \begin{bmatrix}
+        x_c \\ y_c \\ z_c
+        \end{bmatrix}
+        =
+        \mathbf{K^{-1}}
+        s \begin{bmatrix}
+        u \\ v \\ 1
+        \end{bmatrix}
+        \] 
+        <p>Then, the world coordinates can be computed as follows:</p>
+        \[
+        X_{w}
+        =
+        \begin{bmatrix}
+        x_w \\ y_w \\ z_w \\ 1
+        \end{bmatrix}
+        =
+        \begin{bmatrix}
+        \mathbf{R}_{3 \times 3} & \mathbf{t} \\
+        \mathbf{0}_{1 \times 3} & 1
+        \end{bmatrix}^{-1}
+
+        \begin{bmatrix}
+        x_c \\ y_c \\ z_c \\ 1
+        \end{bmatrix}
+        \]
+        <p>Once we get the world coordinate, we can use it to determine the direction of ray by equation:</p>
+        \[
+        \mathbf{r}_d = \frac{\mathbf{X}_w - \mathbf{r}_o}{\|\mathbf{X}_w - \mathbf{r}_o\|_2}
+        \]
+        <h2>Sampling</h2>
+        <h3>Sampling Rays from Images</h3>
+        <p>I compute the origin of ray \(r_o\) and the direction of ray \(r_d\) by previous part. In sampling, I flatten all pixels from all images and do a global sampling once to get N rays from all images.</p>
+        <h3>Sampling Points along Rays</h3>
+        <p>Give the direction of ray \(r_d\), we can sample the point on the ray by the equation:</p>
+        \[
+        \mathbf{x} = \mathbf{r}_o + \mathbf{r}_d \cdot t
+        \]
+        <p>where \(t = np.linspace(2.0, 4.0, 64)\)</p>
+        <p>In the training process, in order to overcome overfitting, I introduce some small perturbation to the points, which is achieved by: \(t = t + (np.random.rand(t.shape) * t_{width}\). In my implementation, I set \(num_sample\) to 64.</p>
+        <h2>Putting the Dataloading All Together</h2>
+        <p>I use \(torch.utils.data.Dataset, torch.utils.data.DataLoader\) to create dataset and dataloader. Dataloader returns ray origin, ray direction and pixel colors of images. To verify my dataset and dataloader, I visualize cameras, rays, and samples in 3D:</p>
+        <img src="./images/1.jpg" alt="image" class="center-image" height="300px">
+        <img src="./images/2.jpg" alt="image" class="center-image" height="300px">
+
+        <h2>Neural Radiance Field</h2>
+        <p>I followed the instructions in the diagram to construct the network architecture of a Neural Radiance Field (NeRF). Given a point on the ray and the direction of the ray, the model predicts both the RGB value and the density of the point. I use an MLP to make these predictions. The input to the model consists of 3D point coordinates and the ray’s direction. ReLU is used as the activation function between layers.The network begins with four hidden layers, each with 256 dimensions and then concatenate the output with positional encoding of coordinate. Four hidden layers, each with 256 dimensions process the concatenation feature. Finally, The output is fed into two separate MLPs: one for predicting RGB values and the other for predicting density. The RGB MLP has an output dimension of 3, while the density MLP has an output dimension of 1. At the end of the RGB MLP, a Sigmoid activation layer is added to ensure the output lies within the range of (0, 1). For the density MLP, a ReLU activation layer is applied to ensure the output is non-negative.</p>
+        <p>In the experiment, I set the hidden dimension to be 256. The learning rate is set to be 5e-4. The batch size is set to be 10000 (rays). The position encoding of ray direction is set to be 4 and the coordinate is set to be 10.</p>
+        <img src="./images/architecture2.png" alt="image" class="center-image" height="300px">
+
+        <h2>Volume Rendering</h2>
+        <p>Once we have the RGB value and density of the point, we can render a ray by:</p>
+        \[
+        \hat{C}(\mathbf{r}) = \sum_{i=1}^N T_i \left( 1 - \exp(-\sigma_i \delta_i) \right) \mathbf{c}_i, \quad
+        \text{where } T_i = \exp\left(-\sum_{j=1}^{i-1} \sigma_j \delta_j\right)
+        \]
+        <p>where \(c_i\) is the RGB value of the point, \(\sigma_i\) is the density of the point </p>
+
+        <h2>Visualization of the rays and samples </h2>
+        <p>I plot 100 rays which are randomly sampled from the training set. 64 samples are sampled along each ray.</p>
+        <img src="./images/rays.png" alt="image" class="center-image" height="500px">
+        <h2>Training process</h2>
+        <p>In my experiment, I set batch size to 10000 and epochs to 100 during training process. Thus, there are 400 gradient steps per epoch.</p>
+        <p>I plotted predicted images on epoch 1, 2, 3, 4, 5, 20, 40, 60, 80, 100</p>
+        <div class="image-row">
+            <figure>
+                <figcaption>epoch 1</figcaption>
+                <img src="../code/results/infer_3d_1epoch.png" alt="Image 1" height="150px"> 
+            </figure>
+            <figure>
+                <figcaption>epoch 2</figcaption>
+                <img src="../code/results/infer_3d_2epoch.png" alt="Image 1" height="150px"> 
+            </figure>
+            <figure>
+                <figcaption>epoch 3</figcaption>
+                <img src="../code/results/infer_3d_3epoch.png" alt="Image 1" height="150px"> 
+            </figure>
+            <figure>
+                <figcaption>epoch 4</figcaption>
+                <img src="../code/results/infer_3d_4epoch.png" alt="Image 1" height="150px"> 
+            </figure>
+            <figure>
+                <figcaption>epoch 5</figcaption>
+                <img src="../code/results/infer_3d_5epoch.png" alt="Image 1" height="150px"> 
+            </figure>
+        </div>
+        <div class="image-row">
+            <figure>
+                <figcaption>epoch 20</figcaption>
+                <img src="../code/results/infer_3d_20epoch.png" alt="Image 1" height="150px"> 
+            </figure>
+            <figure>
+                <figcaption>epoch 40</figcaption>
+                <img src="../code/results/infer_3d_40epoch.png" alt="Image 1" height="150px"> 
+            </figure>
+            <figure>
+                <figcaption>epoch 60</figcaption>
+                <img src="../code/results/infer_3d_60epoch.png" alt="Image 1" height="150px"> 
+            </figure>
+            <figure>
+                <figcaption>epoch 80</figcaption>
+                <img src="../code/results/infer_3d_80epoch.png" alt="Image 1" height="150px"> 
+            </figure>
+            <figure>
+                <figcaption>epoch 100</figcaption>
+                <img src="../code/results/infer_3d_100epoch.png" alt="Image 1" height="150px"> 
+            </figure>
+        </div>
+        <p>During the training process, I use the negative PSNR as the loss function for gradient descent. In the graph below, I have plotted the PSNR for both the training set and the validation set. </p>
+        <div class="image-row">
+        <figure>
+            <figcaption>Training set</figcaption>
+            <img src="../code/results/loss_curve_3d.png" alt="Image 1"  height="300px"> 
+        </figure>
+        <figure>
+            <figcaption>Validation set</figcaption>
+            <img src="../code/results/loss_curve_3d_val.png" alt="Image 1" height="300px"> 
+        </figure>
+        </div>
+        <h2>Spherical rendering</h2>
+        <p>After training network on 100 epochs, I used camera extrinsics from test set to render images of the lego from different views. And I get the final results like this:</p>
+        <div class="image-row">
+        <img src="../code/results/render_lego.gif" alt="Image" height="300px"> 
+        </div>
+
+        <h1>Bells & Whistles</h1>
+        <h2>White Background</h2>
+        <p>Upon examining the volume rendering equation more closely, I discovered that to change the background color of the image, we can add a background color sample at the end of the ray. This ensures that if the ray does not intersect with any object, its resulting color will default to white. Finally, I get a lego video with white background color like this:</p>
+        <div class="image-row">
+            <img src="../code/results/render_lego_white.gif" alt="Image" height="300px"> 
+            </div>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <title>CS180: Project3</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        header {
+            background-color: #4682b4;
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5em;
+        }
+
+        header h2 {
+            margin: 10px 0;
+            font-size: 1.5em;
+            font-weight: 400;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .image-grid img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #4682b4;
+            color: white;
+            margin-top: 20px;
+        }
+    h1 {
+        text-align: center;
+    }
+    h2 {
+        text-align: center;
+    }
+    p {
+        margin-left: 15vh;
+        margin-right: 15vh;
+    }
+    .image-row {
+        display: flex;
+        justify-content: center; 
+        gap: 10px; 
+    }
+    .image-row figure {
+        text-align: center; 
+    }
+    .image-row img {
+        width: 250px; 
+        height: auto;
+    }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>CS180: Project3</h1>
+        <h2>Face Morphing</h2>
+        by Shenghan Zhou
+    </header>
+    <div class="container">
+        <section>
+            <h1> Overview </h1>
+            <p>In project 3, I manually selected pairs of corresponding key points on both images and used <code>scipy.spatial.Delaunay</code> to compute the triangles. Then, I implemented affine transformations and cross-dissolving to compute the mid-way face. Additionally, I predefined 80 values for <code>warp_frac</code> and <code>dissolve_frac</code> in the range <code>[0,1]</code> to generate a morphing animation between two faces. Furthermore, I computed the mean face of the Danes dataset and warped the mean face to my geometry, as well as warped my face to the mean geometry. Using the mean face, I created a caricature of my face by extrapolating from the mean face. Finally, I changed my face's shape, appearance, and both to resemble an average face of 12 women, who were chosen as the most beautiful faces in 2012.</p>
+        </section>
+        <section>
+            <h1>
+                Part 1. Defining Correspondences
+            </h1>
+            <p>I use the provided labling tool <a href="https://cal-cs180.github.io/fa23/hw/proj3/tool">here</a> to select key points between two facese and use <code>scipy.spatial.Delaunay</code> in python to compute triangulation of the mean of the two points.</p>
+            <p>The left face is me and the right face is George.</p>
+            <img src="../code/images/points.png" alt="Description of the photo" style="display: block; margin: auto; width: 800px; height: auto; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);">
+        </section>
+        <section>
+            <h1>Part 2. Computing the "Mid-way Face"</h1>
+            <p>In this part, I first compute the average of each key point in the two faces and use the average points to compute the triangulation for the two faces. Then, I calculate the inverse affine transformation matrix from the triangles in the average shape to the original triangles. Using this transformation, I warp the original image to the average shape. Finally, I implement cross-dissolving by averaging the morphed images.</p>
+            <div class="image-row">
+                <figure>
+                    <img src="../code/images/resize_me.jpg" alt="Image 1">
+                    <figcaption>Shenghan</figcaption>
+                </figure>
+            
+                <figure>
+                    <img src="../code/images/mid_way_me_george.png" alt="Image 2">
+                    <figcaption>mid-way face</figcaption>
+                </figure>
+            
+                <figure>
+                    <img src="../code/images/george.jpg" alt="Image 3">
+                    <figcaption>George</figcaption>
+                </figure>
+            </div>
+        </section>
+        <section>
+            <h1>Part 3. The Morph Sequence</h1>
+            <p>In this part, I defined 80 values of <code>warp_frac</code> and <code>dissolve_frac</code> in the range <code>[0,1]</code> to generate a morphing animation between two faces.</p> 
+            <figure style="text-align: center;">
+                <img src="../code/images/sequences.gif" alt="GIF Animation" style="width:300px; height:auto;">
+                <figcaption>This is a GIF animation</figcaption>
+            </figure>
+        </section>
+        <section>
+            <h1>Part 4. The "Mean face" of a population</h1>
+            <p>In this section, I compute the average face of Danes. First, I collect the key points of each face and calculate the average points. Then, I warp all the faces to match the average shape. Finally, I compute the average face for all Danes, as well as for male and female Danes separately.</p>
+            <p>Here are some examples of warped faces:</p>
+            <div class="image-row">
+                <figure>
+                    <img src="../code/images/1_o.png" alt="Image 1">
+                    <figcaption>original face</figcaption>
+                </figure>
+            
+                <figure>
+                    <img src="../code/images/1.png" alt="Image 2">
+                    <figcaption>warped face</figcaption>
+                </figure>
+            </div>
+            <div class="image-row">
+                <figure>
+                    <img src="../code/images/2_o.png" alt="Image 1">
+                    <figcaption>original face</figcaption>
+                </figure>
+            
+                <figure>
+                    <img src="../code/images/2.png" alt="Image 2">
+                    <figcaption>warped face</figcaption>
+                </figure>
+            </div>
+            <div class="image-row">
+                <figure>
+                    <img src="../code/images/3_o.png" alt="Image 1">
+                    <figcaption>original face</figcaption>
+                </figure>
+            
+                <figure>
+                    <img src="../code/images/3.png" alt="Image 2">
+                    <figcaption>warped face</figcaption>
+                </figure>
+            </div>
+            <div class="image-row">
+                <figure>
+                    <img src="../code/images/4_o.png" alt="Image 1">
+                    <figcaption>original face</figcaption>
+                </figure>
+            
+                <figure>
+                    <img src="../code/images/4.png" alt="Image 2">
+                    <figcaption>warped face</figcaption>
+                </figure>
+            </div>
+            <p>Here are examples of mean faces:</p>
+            <div class="image-row">
+                <figure>
+                    <img src="../code/images/mean.png" alt="Image 1">
+                    <figcaption>mean face</figcaption>
+                </figure>
+                <figure>
+                    <img src="../code/images/mean_m.png" alt="Image 2">
+                    <figcaption>mean male face</figcaption>
+                </figure>
+                <figure>
+                    <img src="../code/images/mean_f.png" alt="Image 2">
+                    <figcaption>mean female face</figcaption>
+                </figure>
+            </div>
+            <p>By using the average face, I warp my face to match the average geometry and warp the average face to match my geometry.</p>
+            <div class="image-row">
+                <figure>
+                    <img src="../code/images/me2mean.png" alt="Image 1">
+                    <figcaption>my face into the average geometry</figcaption>
+                </figure>
+                <figure>
+                    <img src="../code/images/mean2me.png" alt="Image 2">
+                    <figcaption>mean face into my geometry</figcaption>
+                </figure>
+            </div>
+        </section>
+        <section>
+            <h1>Part 5. Caricatures: Extrapolating from the mean</h1>
+            <p>I create a caricature of my face by extrapolating from the mean male face obtained in the previous section. I use the parameter alpha to control the intensity of the caricature. When alpha is below 0, it exaggerates features of my face, and when alpha is greater than 1, it exaggerates the features of the mean male face.</p>
+            <div class="image-row">
+                <figure>
+                    <img src="../code/images/Caricature_-0.5.png" alt="Image 1">
+                    <figcaption>alpha=-0.5</figcaption>
+                </figure>
+                <figure>
+                    <img src="../code/images/Caricature_0.5.png" alt="Image 1">
+                    <figcaption>alpha=0.5</figcaption>
+                </figure>
+            </div>
+            <div class="image-row">
+                <figure>
+                    <img src="../code/images/Caricature_1.0.png" alt="Image 1">
+                    <figcaption>alpha=1.0</figcaption>
+                </figure>
+                <figure>
+                    <img src="../code/images/Caricature_1.5.png" alt="Image 1">
+                    <figcaption>alpha=1.5</figcaption>
+                </figure>
+            </div>
+        </section>
+        <section>
+            <h1>Bells and Whistles</h1>
+            <h2>Change gender</h2>
+            <p>In this part, I changed my face's shape, appearance, and both to resemble an average face of 12 women, who were chosen as the most beautiful faces in 2012 (shown in the left). I use the average face as a second image.</p>
+            <div class="image-row">
+                <figure>
+                    <img src="../code/images/female.jpg" alt="Image 1">
+                    <figcaption>average face</figcaption>
+                </figure>
+                <figure>
+                    <img src="../code/images/resize_me_3.png" alt="Image 1">
+                    <figcaption>me</figcaption>
+                </figure>
+            </div>
+            <p>I firstly morp my face to the average face shape</p>
+            <img src="../code/images/change_shape.png" style="display: block; margin: auto; width: 300px; height: auto; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);">
+            <p>Then, I morp the average face to my face shape and change my appearance</p>
+            <img src="../code/images/change_appearance.png" style="display: block; margin: auto; width: 300px; height: auto; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);">
+            <p>Finally, I change both my shape and appearance</p>
+            <img src="../code/images/change_both.png" style="display: block; margin: auto; width: 300px; height: auto; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);">
+        </section>
+    </div>
+
+</body>
+</html>

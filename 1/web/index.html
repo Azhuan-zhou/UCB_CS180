@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CS180: Project1</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        header {
+            background-color: #4682b4;
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5em;
+        }
+
+        header h2 {
+            margin: 10px 0;
+            font-size: 1.5em;
+            font-weight: 400;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .image-grid img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #4682b4;
+            color: white;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>CS180: Project1</h1>
+    <h2>Images of the Russian Empire: Colorizing the Prokudin-Gorskii photo collection</h2>
+    <p>by Shenghan Zhou</p>
+</header>
+
+<div class="container">
+    <!-- Overview Section -->
+    <section class="overview",style="display: flex;">
+        <div class="overview-text",style="flex: 1;">
+            <h3>Overview</h3>
+            <p>In 1907, Sergei Mikhailovich Prokudin-Gorskii became a strong believer in the potential of color photography. With the approval of the Tsar, he embarked on a journey across the Russian Empire, capturing color photographs of the scenes he encountered. At the time, the concept of color photography was still in its infancy. To produce color images, he took three separate exposures of each scene on glass plates, using red, green, and blue filters. Though Prokudin-Gorskii’s vision wasn’t fully realized during his lifetime, his RGB glass plate negatives endured, and the Library of Congress later brought his images to life through colorization.</p>
+            <p>This project is to transform the digitized glass plate images into a color image with minimal visual artifacts. The task involves accurately aligning the R, G, and B channels using Sobel features to create a composite color image. Additionally, the process includes automatically cropping the image using a threshold-based method and enhancing contrast through histogram equalization. These steps ensure a well-aligned, visually enhanced final image with reduced unwanted borders and improved contrast across the entire image. This project uses python to accomplish this assignment. An illustration of this process shows the original glass plate images on the left and the final colorized result on the right.</p>
+        </div>
+        <div style="flex: 1; display: flex; justify-content: center; align-items: center;">
+            <img src="./image/first.png"  style="max-width: 80%; max-height: 400px; height: auto;">
+        </div>
+    </section>
+
+    <section>
+        <h3>Approach</h3>
+        <div style="display: flex; justify-content: space-between;">
+            <div style="flex: 1; padding-right: 20px;">
+                <h4>Method 1: Displacement</h4>
+                <p>One straightforward approach for aligning images involves displacing the image and calculating the distance (using metrics like Euclidean Distance or Normalized Cross-Correlation) between the target image and the displaced image. However, this method is time-consuming for high-resolution images. In this method, I used a displacement range of [-15, 15] pixels. The outcome of this approach is shown on the left.</p>
+            </div>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-top: 20px;">
+            <div style="flex: 1; padding-right: 20px;">
+                <h4>Method 2: Image Pyramid</h4>
+                <p>An alternative method utilizes an image pyramid, where each layer is scaled by a factor of 2 from the previous layer. The displacement search begins at the lowest resolution image, using a range of [-10, 10] pixels and 5 layers. After completing one layer, the displacement range for the next layer is adjusted by subtracting 2 from the previous range. When the optimal displacement is found, it is multiplied by 2, and the search is initialized again for the next layer. For instance, if the best displacement found in the first layer is (2,4), the search displacement for the second layer would range from [-8,8]. The search range is [-6, 10] for x and [-4, 12] for y. The results from this method are shown on the right.</p>
+            </div>
+        </div>
+        <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+                <th style="padding: 10px; border: 1px solid #ddd;"></th>
+                <th style="padding: 10px; border: 1px solid #ddd;">Method 1</th>
+                <th style="padding: 10px; border: 1px solid #ddd;">Method 2</th>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #ddd;">Normalized Cross-Correlation</td>
+                <td style="padding: 10px; text-align: center;">
+                    <img src="./image/church_ed.jpg" alt="Displacement Method Result" style="max-width: 70%; max-height: 400px; height: auto; border: 1px solid #ddd;">
+                    
+                    <p>151.92s</p>
+                </td>
+                <td style="padding: 10px; text-align: center;">
+                    <img src="./image/church3_ncc.jpg" alt="Image Pyramid Method Result" style="max-width: 70%; max-height: 400px; height: auto; border: 1px solid #ddd;">
+                    <p>11.89s</p>
+                </td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #ddd;">Euclidean Distance</td>
+                <td style="padding: 10px; text-align: center;">
+                    <img src="./image/church_ed_p.jpg" alt="Example Image 1" style="max-width: 70%; max-height: 400px; height: auto; border: 1px solid #ddd;">
+                    
+                    <p>51.25s</p>
+                </td>
+                <td style="padding: 10px; text-align: center;">
+                    <img src="./image/church_ncc_p.jpg" alt="Example Image 2" style="max-width: 70%; max-height: 400px; height: auto; border: 1px solid #ddd;">
+                    <p>6.29s</p>
+                </td>
+            </tr>
+        </table>
+        <section>
+            <h4>Summary</h4>
+            <p>In summary, compared to Euclidean Distance, using Normalized Cross-Correlation for image alignment not only takes more time but also reduces the alignment quality. On the other hand, Method 2, which utilizes an image pyramid, significantly improves time efficiency while maintaining the quality of alignment.</p>
+        </section>
+    </section>
+
+    <section>
+        <h3>Bells & Whistles</h3>
+        <h4>1. Automatic Cropping</h4>
+    <p>For automatic cropping, I use a threshold-based approach. The idea is to detect the boundaries by identifying rows and columns where pixel values are either less than 30 (for black) or greater than 230 (for white). If more than 60% of the pixels in a row or column fall within this range, that row or column is marked as a boundary. However, this method alone may not be sufficient. Sometimes, boundary areas contain pixels outside this range because boundaries are continuous. To address this, I check if a detected row or column is part of the boundary by examining its neighboring rows or columns. If a row identified as non-boundary has adjacent rows or columns classified as boundary, then this row is also considered part of the boundary. The results of this approach are shown below.</p>
+    
+    <h4>2. Automatic Contrasting</h4>
+    <p>For automatic contrast enhancement, I employ histogram equalization for each channel of the image. Histogram equalization is a technique that enhances contrast by redistributing pixel intensity values across the entire range. This method aims to make the histogram of the image’s pixel values more uniform, thereby improving the visibility of details in both bright and dark areas. By adjusting the intensity levels to use the full spectrum of available values, histogram equalization results in an image with improved contrast and more distinguishable features.</p>
+    <h4>3. Better features</h4>
+    <p>Using RGB values for image alignment can be problematic due to similar colors in different images. To improve alignment, I use gradient features derived from the Sobel operator instead of RGB. The Sobel operator detects edges by calculating gradient magnitudes in both horizontal and vertical directions. This technique highlights significant intensity changes, making it easier to identify and match edges between images. By focusing on these gradient features, the Sobel operator enhances alignment accuracy and robustness, particularly in images with similar colors.</p>
+    <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+            <td style="padding: 10px; text-align: center; vertical-align: middle;">
+                <p style="font-weight: bold; font-size: 16px;">Without cropping, contrasting, Sobel</p>
+                <img src="./image/emir1.jpg" alt="Without cropping, contrasting, Sobel" style="max-width: 70%; height: auto; border: 1px solid #ddd;">
+            </td>
+            <td style="padding: 10px; text-align: center; vertical-align: middle;">
+                <p style="font-weight: bold; font-size: 16px;">cropping</p>
+                <img src="./image/emir2.jpg" alt="Without contrasting, Sobel; With cropping" style="max-width: 70%; height: auto; border: 1px solid #ddd;">
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 10px; text-align: center; vertical-align: middle;">
+                <p style="font-weight: bold; font-size: 16px;">cropping, contrasting</p>
+                <img src="./image/emir3.jpg" alt="Without Sobel; With cropping, contrasting" style="max-width: 70%; height: auto; border: 1px solid #ddd;">
+            </td>
+            <td style="padding: 10px; text-align: center; vertical-align: middle;">
+                <p style="font-weight: bold; font-size: 16px;">cropping, contrasting, Sobel</p>
+                <img src="./image/emir4.jpg" alt="With cropping, contrasting, Sobel" style="max-width: 70%; height: auto; border: 1px solid #ddd;">
+            </td>
+        </tr>
+    </table>
+    <h4>Summary</h4>
+        <p>In summary, after performing automatic cropping, we effectively reduce the presence of unwanted white and black borders around the image, creating a cleaner and more focused result. The application of contrast enhancement through histogram equalization further improves the image by making details in both bright and dark regions more visible, thus enhancing the overall visual quality. Finally, by utilizing the Sobel filter for edge detection, we refine the alignment process, making it more accurate and precise, which leads to a more cohesive and visually appealing final image. These combined techniques contribute to a significant improvement in the overall quality of the image processing pipeline.</p>
+    </section>
+    <section>
+        <h3>Results</h3>
+        <p>Since I first apply cropping and histogram equalization before aligning the images, the displacement of each image may differ compared to other methods. The preprocessing steps alter the image boundaries, potentially resulting in different pixel shifts required for alignment. This approach, while enhancing contrast and reducing unwanted borders, may affect how the images align with each other, leading to unique displacement results that wouldn’t occur if alignment was performed first.</p>
+        <h4>1. example images</h4>
+        <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+                <td style="padding: 10px; text-align: center;">
+                    <p style="font-weight: bold; font-size: 16px;">cathedral<br>R: (12, 3)<br>G: (0, 0)</p>
+                    <img src="./image/1.jpg" alt="Result Image 1" style="max-width: 90%; height: auto; border: 1px solid #ddd;">
+                </td>
+                <td style="padding: 10px; text-align: center;">
+                    <p style="font-weight: bold; font-size: 16px;">church<br>R: (58, -4)<br>G: (25 ,4)</p>
+                    <img src="./image/2.jpg" alt="Result Image 2" style="max-width: 90%; height: auto; border: 1px solid #ddd;">
+                </td>
+                <td style="padding: 10px; text-align: center;">
+                    <p style="font-weight: bold; font-size: 16px;">emir<br>R: (107,40)<br>G: (49, 23)</p>
+                    <img src="./image/3.jpg" alt="Result Image 3" style="max-width: 90%; height: auto; border: 1px solid #ddd;">
+                </td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; text-align: center;">
+                    <p style="font-weight: bold; font-size: 16px;">harvest<br>R: (123 ,11)<br>G: (60, 14)</p>
+                    <img src="./image/4.jpg" alt="Result Image 4" style="max-width: 90%; height: auto; border: 1px solid #ddd;">
+                </td>
+                <td style="padding: 10px; text-align: center;">
+                    <p style="font-weight: bold; font-size: 16px;">icon<br>R: (90, 23)<br>G: (39, 16)</p>
+                    <img src="./image/5.jpg" alt="Result Image 5" style="max-width: 90%; height: auto; border: 1px solid #ddd;">
+                </td>
+                <td style="padding: 10px; text-align: center;">
+                    <p style="font-weight: bold; font-size: 16px;">lady<br>R: (119, 13)<br>G: (56, 9)</p>
+                    <img src="./image/6.jpg" alt="Result Image 6" style="max-width: 90%; height: auto; border: 1px solid #ddd;">
+                </td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; text-align: center;">
+                    <p style="font-weight: bold; font-size: 16px;">melons<br>R: (177, 12)<br>G: (81, 10)</p>
+                    <img src="./image/7.jpg" alt="Result Image 7" style="max-width: 90%; height: auto; border: 1px solid #ddd;">
+                </td>
+                <td style="padding: 10px; text-align: center;">
+                    <p style="font-weight: bold; font-size: 16px;">monastery<br>R: (3, 2)<br>G: (-3, 2)</p>
+                    <img src="./image/8.jpg" alt="Result Image 8" style="max-width: 90%; height: auto; border: 1px solid #ddd;">
+                </td>
+                <td style="padding: 10px; text-align: center;">
+                    <p style="font-weight: bold; font-size: 16px;">onion church<br>R: (107, 35)<br>G: (52, 25)</p>
+                    <img src="./image/9.jpg" alt="Result Image 9" style="max-width: 90%; height: auto; border: 1px solid #ddd;">
+                </td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; text-align: center;">
+                    <p style="font-weight: bold; font-size: 16px;">sculpture<br>R: (139, -27)<br>G: (33, -11)</p>
+                    <img src="./image/10.jpg" alt="Result Image 10" style="max-width: 90%; height: auto; border: 1px solid #ddd;">
+                </td>
+                <td style="padding: 10px; text-align: center;">
+                    <p style="font-weight: bold; font-size: 16px;">self portrait<br>R: (175, 37)<br>G: (78, 29)</p>
+                    <img src="./image/11.jpg" alt="Result Image 11" style="max-width: 90%; height: auto; border: 1px solid #ddd;">
+                </td>
+                <td style="padding: 10px; text-align: center;">
+                    <p style="font-weight: bold; font-size: 16px;">three generations<br>R: (107, 8)<br>G: (55, 12)</p>
+                    <img src="./image/12.jpg" alt="Result Image 12" style="max-width: 90%; height: auto; border: 1px solid #ddd;">
+                </td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; text-align: center;">
+                    <p style="font-weight: bold; font-size: 16px;">tobolsk<br>R: (6, 3)<br>G: (3, 3)</p>
+                    <img src="./image/13.jpg" alt="Result Image 13" style="max-width: 90%; height: auto; border: 1px solid #ddd;">
+                </td>
+                <td style="padding: 10px; text-align: center;">
+                    <p style="font-weight: bold; font-size: 16px;">train<br>R: (85, 29)<br>G: (41, 0)</p>
+                    <img src="./image/14.jpg" alt="Result Image 14" style="max-width: 90%; height: auto; border: 1px solid #ddd;">
+                </td>
+                <td style="padding: 10px; text-align: center;">
+                    <!-- Empty cell for balance -->
+                </td>
+            </tr>
+        </table>
+        <h4>2. Prokudin-Gorskii collection</h4>
+        <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+                <td style="padding: 10px; text-align: center;">
+                    <p style="font-weight: bold; font-size: 16px;">Yusuf Hamadani mosque and mausoleum, ancient Merv, Turkmenistan</p>
+                    <img src="./image/test1.jpeg" alt="Result Image 1" style="max-height: 100%; width: auto; border: 1px solid #ddd;">
+                </td>
+                <td style="padding: 10px; text-align: center;">
+                    <p style="font-weight: bold; font-size: 16px;">Front view of a crumbling mosque, with a man standing beside it</p>
+                    <img src="./image/test2.jpeg" alt="Result Image 2" style="max-height: 100%; width: auto; border: 1px solid #ddd;">
+                </td>
+                <td style="padding: 10px; text-align: center;">
+                    <p style="font-weight: bold; font-size: 16px;">V Malorossīi</p>
+                    <img src="./image/test3.jpeg" alt="Result Image 3" style="max-height: 100%; width: auto; border: 1px solid #ddd;">
+                </td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; text-align: center;">
+                    <p style="font-weight: bold; font-size: 16px;">R: (79, 7) <br> G: (33, 5)</p>
+                    <img src="./image/testOut1.jpg" alt="Result Image 4" style="max-width: 100%; height: auto; border: 1px solid #ddd;">
+                </td>
+                <td style="padding: 10px; text-align: center;">
+                    <p style="font-weight: bold; font-size: 16px;">R: (71, 10) <br>G: (27, 9)</p>
+                    <img src="./image/testOut2.jpg" alt="Result Image 5" style="max-width: 100%; height: auto; border: 1px solid #ddd;">
+                </td>
+                <td style="padding: 10px; text-align: center;">
+                    <p style="font-weight: bold; font-size: 16px;">R: (-34, 9)<br> G: (-21, 8)</p>
+                    <img src="./image/testOut3.jpg" alt="Result Image 6" style="max-width: 100%; height: auto; border: 1px solid #ddd;">
+                </td>
+            </tr>
+        </table>
+    </section>
+</div>
+
+<footer>
+    <p>&copy; 2024 Shenghan Zhou</p>
+</footer>
+
+</body>
+</html>

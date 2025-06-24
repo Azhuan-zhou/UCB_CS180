@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <title>CS180: Project2</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        header {
+            background-color: #4682b4;
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5em;
+        }
+
+        header h2 {
+            margin: 10px 0;
+            font-size: 1.5em;
+            font-weight: 400;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .image-grid img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #4682b4;
+            color: white;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>CS180: Project2</h1>
+    <h2>Fun with Filters and Frequencies!</h2>
+    <p>by Shenghan Zhou</p>
+</header>
+
+<div class="container">
+    <section>
+        <h1>Part 1: Fun with Filters</h1>
+        <h2>Part 1.1: Finite Difference Operator</h2>
+        <p>The gradient magnitude computation involves determining the strength of changes in intensity at each point in an image. Filters like \( D_x = \begin{bmatrix} -1 & 1 \end{bmatrix} \) and \( D_y = \begin{bmatrix} -1 \\ 1 \end{bmatrix} \) are finite difference operators to estimate the gradient in the horizontal and vertical directions, respectively.</p>
+
+        <h3>Filter \( D_x = \begin{bmatrix} -1 & 1 \end{bmatrix} \):</h3>
+        <p>This is a horizontal gradient filter that computes the difference between adjacent pixels in the x-direction (left to right). It measures the change in intensity between a pixel and its neighbor.</p>
+
+        <h3>Filter \( D_y = \begin{bmatrix} -1 \\ 1 \end{bmatrix} \):</h3>
+        <p>This is a vertical gradient filter that computes the difference between adjacent pixels in the y-direction (top to bottom). It measures the change in intensity between a pixel and the pixel below it.</p>
+
+        <h3>Gradient Magnitude Computation:</h3>
+        <p>Once you apply these filters to the image, you get two gradients at each pixel location: one in the x-direction (\( G_x \)) and one in the y-direction (\( G_y \)). The magnitude of the gradient at each point can be computed using:</p>
+        <p>
+            \[
+            |\nabla I| = \sqrt{G_x^2 + G_y^2}
+            \]
+        </p>
+    </section>
+    <section>
+        <h3>cameraman</h3>
+        <table style="width: 80%; border-collapse: collapse;margin-left: auto; margin-right: auto;">
+            <tr>
+                <td style="border: 1px solid #ddd; text-align: center;">
+                    <img src="./images/D_x.png" alt="Image 1" style="width: 100%; height: auto;">
+                    <p>\[
+                        G_{x}
+                        \]</p>
+                </td>
+                <td style="border: 1px solid #ddd; text-align: center;">
+                    <img src="./images/D_y.png" alt="Image 2" style="width: 100%; height: auto;">
+                    <p>\[
+                        G_{y}
+                        \]</p>
+                </td>
+                <td style="border: 1px solid #ddd; text-align: center;">
+                    <img src="./images/diff.png" alt="Image 3" style="width: 100%; height: auto;">
+                    <p>gradient magnitude</p>
+                </td>
+                <td style="border: 1px solid #ddd; text-align: center;">
+                    <img src="./images/diff_threshold.png" alt="Image 4" style="width: 100%; height: auto;">
+                    <p>binary magnitude</p>
+                </td>
+            </tr>
+        </table>
+        <p>The threshold for the binary magnitude is set to 80. If a pixel’s value exceeds 20, it is considered part of an edge. </p>
+    </section>
+<section>
+    <h2>Part 1.2: Derivative of Gaussian (DoG) Filter</h2>
+    <h3>Method 1</h3>
+    If we directly apply the Finite Difference Operator, the result may be noisy. A Gaussian filter can be used to smooth the image, reducing noise. Therefore, we first apply the Gaussian filter to smooth the image and then use the Finite Difference Operator to calculate the gradient magnitude. This can reduce the effect of noise in the image and produce a more accurate and thicker edge image. The results are shown below:
+    <table style="width: 80%; border-collapse: collapse;margin-left: auto; margin-right: auto;">
+        <tr>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/D_x_1.png" alt="Image 1" style="width: 100%; height: auto;">
+                <p>\[
+                    G_{x}
+                    \]</p>
+            </td>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/D_y_1.png" alt="Image 2" style="width: 100%; height: auto;">
+                <p>\[
+                    G_{y}
+                    \]</p>
+            </td>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/DOG1.png" alt="Image 3" style="width: 100%; height: auto;">
+                <p>gradient magnitude</p>
+            </td>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/DOG1_bin.png" alt="Image 4" style="width: 100%; height: auto;">
+                <p>binary magnitude</p>
+            </td>
+        </tr>
+    </table>
+    <h3>Method 2</h3>
+Since the derivative of the convolution of two functions is equivalent to the convolution of the derivative of one function with the other, we can calculate the gradient magnitude of the Gaussian filter using the Finite Difference Operator, and then convolve it with the image. The results of this visualization are shown below:
+<table style="width: 50%; border-collapse: collapse;margin-left: auto; margin-right: auto;">
+    <tr>
+        <td style="border: 1px solid #ddd; text-align: center;">
+            <img src="./images/D_x_filter.png" alt="Image 1" style="width: 100%; height: auto;">
+            <p>Convolving the gaussian with \[D_x\]  </p>
+        </td>
+        <td style="border: 1px solid #ddd; text-align: center;">
+            <img src="./images/D_y_filter.png" alt="Image 2" style="width: 100%; height: auto;">
+            <p>Convolving the gaussian with \[D_y\]</p>
+    </tr>
+</table>
+
+</br>
+<table style="width: 80%; border-collapse: collapse;margin-left: auto; margin-right: auto;">
+    <tr>
+        <td style="border: 1px solid #ddd; text-align: center;">
+            <img src="./images/D_x_2.png" alt="Image 1" style="width: 100%; height: auto;">
+            <p>\[
+                G_{x}
+                \]</p>
+        </td>
+        <td style="border: 1px solid #ddd; text-align: center;">
+            <img src="./images/D_y_2.png" alt="Image 2" style="width: 100%; height: auto;">
+            <p>\[
+                G_{y}
+                \]</p>
+        </td>
+        <td style="border: 1px solid #ddd; text-align: center;">
+            <img src="./images/DOG2.png" alt="Image 3" style="width: 100%; height: auto;">
+            <p>gradient magnitude</p>
+        </td>
+        <td style="border: 1px solid #ddd; text-align: center;">
+            <img src="./images/DOG2_bin.png" alt="Image 4" style="width: 100%; height: auto;">
+            <p>binary magnitude</p>
+        </td>
+    </tr>
+</table>
+Compareing the results of method 1 and method 2, we can apparently notice that those methods are the same. What's more, The threshold for DOG filter is set to 30, which is less than the threshold used in Finite Difference operators (80). Therefore, by DOG filter, it depress the effect of noise.
+</section>
+
+
+<h1>Part 2: Fun with Frequencies!</h1>
+<section>
+<h2>Part 2.1: Image "Sharpening"</h2>
+To enhance the sharpness, we can add the high-frequency image back to the original image. This is because the high-frequency components of an image represent rapid intensity changes, such as edges and fine details. Adding high frequency image back to original image boosts the contrast of the fine details and edges, making the image appear sharper. The process can be controlled by a scaling factor \(\alpha\) to adjust the intensity of sharpening:
+\[sharpend \ image = image +\alpha * \ high \ frequency \ of \ image\] 
+Results of Taj Mahal processing by unmask sharp filter
+
+<table style="width: 80%; border-collapse: collapse;margin-left: auto; margin-right: auto;">
+    <tr>
+        <td style="border: 1px solid #ddd; text-align: center;">
+            <img src="./images/sharp_alpha(0).png" alt="Image 1" style="width: 100%; height: auto;">
+            <p>\[\alpha=0\]</p>
+        </td>
+        <td style="border: 1px solid #ddd; text-align: center;">
+            <img src="./images/sharp_alpha(1).png" alt="Image 2" style="width: 100%; height: auto;">
+            <p>\[\alpha=1\]</p>
+        </td>
+        <td style="border: 1px solid #ddd; text-align: center;">
+            <img src="./images/sharp_alpha(2).png" alt="Image 3" style="width: 100%; height: auto;">
+            <p>\[\alpha=2\]</p>
+        </td>
+        <td style="border: 1px solid #ddd; text-align: center;">
+            <img src="./images/sharp_alpha(3).png" alt="Image 4" style="width: 100%; height: auto;">
+            <p>\[\alpha=3\]</p>
+        </td>
+        <td style="border: 1px solid #ddd; text-align: center;">            
+            <img src="./images/sharp_alpha(4).png" alt="Image 4" style="width: 100%; height: auto;">
+            <p>\[\alpha=4\]</p>
+        </td>
+    </tr>
+</table>
+<h3>Sunset</h3>
+<table style="width: 80%; border-collapse: collapse;margin-left: auto; margin-right: auto;">
+    <tr>
+        <td style="border: 1px solid #ddd; text-align: center;">
+            <img src="./images/sharp_alpha_1(0).png" alt="Image 1" style="width: 100%; height: auto;">
+            <p>Original image</p>
+        </td>
+        <td style="border: 1px solid #ddd; text-align: center;">
+            <img src="./images/sharp_alpha_1(1).png" alt="Image 2" style="width: 100%; height: auto;">
+            <p>\[\alpha=1\]</p>
+        </td>
+        <td style="border: 1px solid #ddd; text-align: center;">
+            <img src="./images/sharp_alpha_1(2).png" alt="Image 3" style="width: 100%; height: auto;">
+            <p>\[\alpha=2\]</p>
+        </td>
+        <td style="border: 1px solid #ddd; text-align: center;">
+            <img src="./images/sharp_alpha_1(3).png" alt="Image 4" style="width: 100%; height: auto;">
+            <p>\[\alpha=3\]</p>
+        </td>
+        <td style="border: 1px solid #ddd; text-align: center;">            
+            <img src="./images/sharp_alpha_1(4).png" alt="Image 4" style="width: 100%; height: auto;">
+            <p>\[\alpha=4\]</p>
+        </td>
+    </tr>
+</table>
+<h3>Tower (blur and resharpen)</h3>
+<table style="width: 80%; border-collapse: collapse;margin-left: auto; margin-right: auto;">
+    <tr>
+        <td style="border: 1px solid #ddd; text-align: center;">
+            <img src="./images/tower.png" alt="Image 1" style="width: 100%; height: auto;">
+            <p>Original image</p>
+        </td>
+        <td style="border: 1px solid #ddd; text-align: center;">
+            <img src="./images/tower_blur.png" alt="Image 1" style="width: 100%; height: auto;">
+            <p>Blurring image</p>
+        </td>
+        <td style="border: 1px solid #ddd; text-align: center;">
+            <img src="./images/sharp_alpha_2(1).png" alt="Image 2" style="width: 100%; height: auto;">
+            <p>\[\alpha=1\]</p>
+        </td>
+        <td style="border: 1px solid #ddd; text-align: center;">
+            <img src="./images/sharp_alpha_2(2).png" alt="Image 3" style="width: 100%; height: auto;">
+            <p>\[\alpha=2\]</p>
+        </td>
+        <td style="border: 1px solid #ddd; text-align: center;">
+            <img src="./images/sharp_alpha_2(3).png" alt="Image 4" style="width: 100%; height: auto;">
+            <p>\[\alpha=3\]</p>
+        </td>
+        <td style="border: 1px solid #ddd; text-align: center;">            
+            <img src="./images/sharp_alpha_2(4).png" alt="Image 4" style="width: 100%; height: auto;">
+            <p>\[\alpha=4\]</p>
+        </td>
+    </tr>
+</table>
+When \(\alpha\) reaches 2, we can successfully resharpened it to look like the original image.
+</section>
+<section>
+    <h2>Part 2.2: Hybrid Images</h2>
+    Multiresolution blending combines low and high-frequency components from different images to create hybrid images. The low-pass filter (Gaussian) captures the smooth, large-scale structures, while the high-pass filter retains fine details by subtracting the low frequencies from the original image. The blended image shifts perception based on viewing distance—high frequencies dominate up close, revealing one image, while low frequencies emerge from a distance, revealing another.
+    <img src="./images/hybrid1.png" alt="Image 1" style="width: 70%; height: auto; display: block; margin-left: auto; margin-right: auto;">
+    
+    <img src="./images/hybrid1_.png" alt="Image 1" style="width: 5%; height: auto; display: block; margin-left: auto; margin-right: auto;">
+    In the above visualization, we first compute the low frequency of DerekPicture nad the high frequency of nutmeg. Then, we add them together. The small size hybrid image simulates from viewing the image from a distance. In this case, we can see DerekPicture from the hybrid image
+    <h3>The freqeuncy analysis</h3>
+    <img src="./images/frequency1.png" alt="Image 1" style="width: 70%; height: auto; display: block; margin-left: auto; margin-right: auto;">
+    From the visualization, we can see that the low-pass filter removes the high frequencies, while the high-pass filter eliminates the low frequencies. The frequency of the hybrid image is a combination of the low frequencies from one image and the high frequencies from another.
+
+<br>
+    <h3>Albert Einstein and Marilyn Monroe </h3>
+    <table style="width: 80%; border-collapse: collapse;margin-left: auto; margin-right: auto;">
+        <tr>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/E.png" alt="Image 1" style="width: 100%; height: auto;">
+                <p>original image</p>
+            </td>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/M.png" alt="Image 2" style="width: 100%; height: auto;">
+                <p>original image</p>
+            </td>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/hybrid3.png" alt="Image 3" style="width: 100%; height: auto;">
+                <p>hybrid image</p>
+            </td>
+        </tr>
+    </table> 
+    <img src="./images/hybrid3.png" alt="Image 1" style="width: 5%; height: auto; display: block; margin-left: auto; margin-right: auto;">
+    In this example, it clearly illustrates that when we are close to the image, the high frequencies dominate our perception. However, when the hybrid image is viewed from a distance, we can perceive the low frequencies.
+    <h3>Dog and man in suit(failure)</h3>
+    <table style="width: 80%; border-collapse: collapse;margin-left: auto; margin-right: auto;">
+        <tr>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/dog.png" alt="Image 1" style="width: 100%; height: auto;">
+                <p>original image</p>
+            </td>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/suit.png" alt="Image 2" style="width: 100%; height: auto;">
+                <p>original image</p>
+            </td>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/hybrid2.png" alt="Image 3" style="width: 100%; height: auto;">
+                <p>hybrid image</p>
+            </td>
+        </tr>
+    </table>
+    <img src="./images/hybrid2.png" alt="Image 1" style="width: 5%; height: auto; display: block; margin-left: auto; margin-right: auto;">
+    Because the dog’s body is also a high frequency, even with perfect alignment, we cannot keep only the dog’s head and the man’s body in the suit.
+</section>
+<section>
+<h2>Part 2.3: Gaussian and Laplacian Stacks</h2>
+    A Gaussian stack is a set of images where each image is a progressively blurred version of the original. The blurring is achieved by applying a Gaussian filter with increasing levels of smoothing.
+    A Laplacian stack represents the details at different scales by capturing the difference between successive levels of the Gaussian stack. It highlights the edges and fine structures.
+    The visualization of Gaussian stack and Laplacian stack are shown below. (apple and orange)
+    <h3>Gaussian Stack of apple</h3>
+    <table style="width: 80%; border-collapse: collapse;margin-left: auto; margin-right: auto;">
+        <tr>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/G_a1.png" alt="Image 1" style="width: 100%; height: auto;">
+            </td>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/G_a2.png" alt="Image 2" style="width: 100%; height: auto;">
+            </td>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/G_a3.png" alt="Image 3" style="width: 100%; height: auto;">
+            </td>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/G_a4.png" alt="Image 1" style="width: 100%; height: auto;">
+            </td>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/G_a5.png" alt="Image 2" style="width: 100%; height: auto;">
+            </td>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/G_a6.png" alt="Image 3" style="width: 100%; height: auto;">
+            </td>
+        </tr>
+    </table>
+    <h3>Laplacian Stack of apple</h3>
+    <table style="width: 80%; border-collapse: collapse;margin-left: auto; margin-right: auto;">
+        <tr>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/L_a1.png" alt="Image 1" style="width: 100%; height: auto;">
+            </td>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/L_a2.png" alt="Image 2" style="width: 100%; height: auto;">
+            </td>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/L_a3.png" alt="Image 3" style="width: 100%; height: auto;">
+            </td>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/L_a4.png" alt="Image 1" style="width: 100%; height: auto;">
+            </td>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/L_a5.png" alt="Image 2" style="width: 100%; height: auto;">
+            </td>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/L_a6.png" alt="Image 3" style="width: 100%; height: auto;">
+            </td>
+        </tr>
+    </table>
+    <h3>Gaussian Stack of orange</h3>
+    <table style="width: 80%; border-collapse: collapse;margin-left: auto; margin-right: auto;">
+        <tr>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/G_o1.png" alt="Image 1" style="width: 100%; height: auto;">
+            </td>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/G_o2.png" alt="Image 2" style="width: 100%; height: auto;">
+            </td>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/G_o3.png" alt="Image 3" style="width: 100%; height: auto;">
+            </td>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/G_o4.png" alt="Image 1" style="width: 100%; height: auto;">
+            </td>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/G_o5.png" alt="Image 2" style="width: 100%; height: auto;">
+            </td>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/G_o6.png" alt="Image 3" style="width: 100%; height: auto;">
+            </td>
+        </tr>
+    </table>
+    <h3>Laplacian Stack of orange</h3>
+    <table style="width: 80%; border-collapse: collapse;margin-left: auto; margin-right: auto;">
+        <tr>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/L_o1.png" alt="Image 1" style="width: 100%; height: auto;">
+            </td>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/L_o2.png" alt="Image 2" style="width: 100%; height: auto;">
+            </td>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/L_o3.png" alt="Image 3" style="width: 100%; height: auto;">
+            </td>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/L_o4.png" alt="Image 1" style="width: 100%; height: auto;">
+            </td>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/L_o5.png" alt="Image 2" style="width: 100%; height: auto;">
+            </td>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/L_o6.png" alt="Image 3" style="width: 100%; height: auto;">
+            </td>
+        </tr>
+    </table>
+</section>
+<section>
+    <h2>
+        Part 2.4: Multiresolution Blending
+    </h2>
+    Multiresolution Blending is a technique that merges two images seamlessly using Gaussian and Laplacian stacks. First, create Gaussian and Laplacian stacks for both images and a binary mask. The mask defines the blending region, and its Gaussian stack smooths the transition. For each level of the stack, blend the corresponding levels of the two images using the mask. Finally, reconstruct the blended image by combining the blended Laplacian levels. This method prevents sharp seams and ensures smooth transitions across multiple scales of resolution.
+    <h3>Apple and orange</h3>
+    <table style="width: 80%; border-collapse: collapse;margin-left: auto; margin-right: auto;">
+        <tr>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/collapse1.png" alt="Image 1" style="width: 100%; height: auto;">
+            </td>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/collapse2.png" alt="Image 2" style="width: 100%; height: auto;">
+            </td>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/collapse3.png" alt="Image 3" style="width: 100%; height: auto;">
+            </td>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/collapse4.png" alt="Image 1" style="width: 100%; height: auto;">
+            </td>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/collapse5.png" alt="Image 2" style="width: 100%; height: auto;">
+            </td>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/collapse6.png" alt="Image 3" style="width: 100%; height: auto;">
+            </td>
+        </tr>
+    </table>
+    <h3>Dog and man in suit</h3>
+    <table style="width: 50%; border-collapse: collapse;margin-left: auto; margin-right: auto;">
+        <tr>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/dog.png" alt="Image 1" style="width: 100%; height: auto;">
+                Big dog
+            </td>
+
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/suit.png" alt="Image 2" style="width: 100%; height: auto;">
+                Man in suit
+            </td>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/mask2.png" alt="Image 2" style="width: 100%; height: auto;">
+                Mask
+            </td>
+    </table>
+</br>
+    <table style="width: 80%; border-collapse: collapse;margin-left: auto; margin-right: auto;">
+        <tr>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/collapse_2_1.png" alt="Image 1" style="width: 100%; height: auto;">
+            </td>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/collapse_2_2.png" alt="Image 2" style="width: 100%; height: auto;">
+            </td>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/collapse_2_3.png" alt="Image 3" style="width: 100%; height: auto;">
+            </td>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/collapse_2_4.png" alt="Image 1" style="width: 100%; height: auto;">
+            </td>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/collapse_2_5.png" alt="Image 2" style="width: 100%; height: auto;">
+            </td>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/collapse_2_6.png" alt="Image 3" style="width: 100%; height: auto;">
+            </td>
+        </tr>
+    </table>
+    <h2>Cat and owk</h2>
+    <table style="width: 50%; border-collapse: collapse;margin-left: auto; margin-right: auto;">
+        <tr>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/cat.png" alt="Image 1" style="width: 100%; height: auto;">
+                Cute cat
+            </td>
+
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/owl.jpg" alt="Image 2" style="width: 100%; height: auto;">
+                Owl
+            </td>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/mask3.png" alt="Image 2" style="width: 100%; height: auto;">
+                Mask
+            </td>
+    </table>
+</br>
+    <table style="width: 80%; border-collapse: collapse;margin-left: auto; margin-right: auto;">
+        <tr>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/collapse_3_1.png" alt="Image 1" style="width: 100%; height: auto;">
+            </td>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/collapse_3_2.png" alt="Image 2" style="width: 100%; height: auto;">
+            </td>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/collapse_3_3.png" alt="Image 3" style="width: 100%; height: auto;">
+            </td>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/collapse_3_4.png" alt="Image 1" style="width: 100%; height: auto;">
+            </td>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/collapse_3_5.png" alt="Image 2" style="width: 100%; height: auto;">
+            </td>
+            <td style="border: 1px solid #ddd; text-align: center;">
+                <img src="./images/collapse_3_6.png" alt="Image 3" style="width: 100%; height: auto;">
+            </td>
+        </tr>
+    </table>
+</section>
+</div>
+<footer>
+    <p>&copy; 2024 Shenghan Zhou</p>
+</footer>
+
+</body>
+</html>

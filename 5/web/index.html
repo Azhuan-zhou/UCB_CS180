@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <title>CS180: Project5</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        header {
+            background-color: #4682b4;
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5em;
+        }
+
+        header h2 {
+            margin: 10px 0;
+            font-size: 1.5em;
+            font-weight: 400;
+        }
+        .centered {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h3 {
+            text-align: center;
+        }
+        h4 {
+            text-align: center;
+        }
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .image-grid img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #4682b4;
+            color: white;
+            margin-top: 20px;
+        }
+    h1 {
+        text-align: center;
+    }
+    h2 {
+        text-align: center;
+    }
+    p {
+        margin-left: 15vh;
+        margin-right: 15vh;
+    }
+    .image-row {
+        display: flex;
+        justify-content: center; 
+        gap: 10px; 
+    }
+    .image-row figure {
+        text-align: center; 
+    }
+    .image-row img {
+        width: 300px; 
+        height: auto;
+    }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>CS180: Project5</h1>
+        <h2>Fun With Diffusion Models!</h2>
+        by Shenghan Zhou
+    </header>
+    <div class="container">
+            <h1>Part A: The Power of Diffusion Models!</h1>
+
+            <h2>Part 0: Setup</h2>
+            <p>In this section, I used three text prompts (“an oil painting of a snowy mountain village,” “a man wearing a hat,” and “a rocket ship”) to generate images at two different numbers of inference steps (20 and 30).
+                <br>
+                The random seed I used is 180
+            </p>
+            <div class="image-row">
+                <figure>
+                    <img src="../code/image/part0_20.png" alt="Image 1">
+                    <figcaption>20 steps</figcaption>
+                </figure>
+                <figure>
+                    <img src="../code/image/part0_30.png" alt="Image 2">
+                    <figcaption>30 steps</figcaption>
+                </figure>
+            </div>
+            <h2>Part 1: Sampling Loops</h2>
+            <h3>1.1 Implementing the Forward Process</h3>
+            <p>I use equation (A.2) to create a noisy image</p>
+            <div class="image-row">
+                <figure>
+                    <img src="../code/image/campanile.jpg" alt="Image 1" width=300px height="auto">
+                    <figcaption>Berkeley Campanile</figcaption>
+                </figure>
+                <figure>
+                    <img src="../code/image/noise_250.png" alt="Image 1" width=300px height="auto">
+                    <figcaption>noise level 250</figcaption>
+                </figure>
+            </div>
+            <div class="image-row">
+            <figure>
+                <img src="../code/image/noise_500.png" alt="Image 2" width=300px height="auto">
+                <figcaption>noise level 500</figcaption>
+            </figure>
+            <figure>
+                <img src="../code/image/noise_750.png" alt="Image 3" width=300px height="auto">
+                <figcaption>noise level 750</figcaption>
+            </figure>
+        </div>
+            <h3>1.2 Classical Denoising</h3>
+            <p>For noise level 250, the best kernel size I set is 5 and alpha is 2. 
+                For noise level 500, the best kernel size I set is 5 and alpha is 3. 
+                For noise level 750, the best kernel size I set is 5 and alpha is 4.</p>
+            <div class="image-row">
+                <figure>
+                    <img src="../code/image/G_250.png" alt="Image 1" width=300px height="auto">
+                    <figcaption>Noise level 250</figcaption>
+                </figure>
+                <figure>
+                    <img src="../code/image/G_500.png" alt="Image 1" width=300px height="auto">
+                    <figcaption>Noise level 500</figcaption>
+                </figure>
+                <figure>
+                    <img src="../code/image/G_750.png" alt="Image 1" width=300px height="auto">
+                    <figcaption>Noise level 750</figcaption>
+                </figure>
+            </div>
+            <h3>1.3 One-Step Denoising</h3>
+            <p>In this part, I use unet to denoise image by predicting the noise</p>
+            <figure style="text-align: center;">
+                <img src="../code/image/one_step_250.png" alt="Image 1" width=1000px height="auto" >
+                <figcaption>One-Step Denoised Campanile at t=250</figcaption>
+            </figure>
+            <figure style="text-align: center;">
+                <img src="../code/image/one_step_500.png" alt="Image 1" width=1000px height="auto">
+                <figcaption>One-Step Denoised Campanile at t=500</figcaption>
+            </figure>
+            <figure style="text-align: center;">
+                <img src="../code/image/one_step_750.png" alt="Image 1" width=1000px height="auto">
+                <figcaption>One-Step Denoised Campanile at t=750</figcaption>
+            </figure>
+            <h3>1.4 Iterative Denoising</h3>
+            <p>In one step denoising, we cannot completely get a clear image in most of time. We can utilizs diffusion models to denoise iteratively</p>
+            <figure style="text-align: center;">
+                <figcaption> the noisy image every 5th loop of denoising</figcaption>
+                <img src="../code/image/iterative_denoising_5th.png" alt="Image 1" width=1000px height="auto">
+            </figure>
+            <figure style="text-align: center;">
+                <figcaption>Final results</figcaption>
+                <br>
+                <img src="../code/image/iterative_denoising_compare.png" alt="Image 1" width=1000px height="auto">
+            </figure>
+            <h3>1.5 Diffusion Model Sampling</h3>
+            <p>I use the diffusion model to generate images from random noise and set i_start = 0.</p>
+            <figure style="text-align: center;">
+                <figcaption>Final results</figcaption>
+                <img src="../code/image/high.png" alt="Image 1" width=1000px height="auto">
+            </figure>
+           
+            <h3>1.6 Classifier-Free Guidance (CFG)</h3>
+            <p>By CFG, we can generate images that adhere more or less closely to the text prompts we provide</p>
+            <figure style="text-align: center;">
+                <figcaption>Final results (<sub>&gamma;</sub> = 7)</figcaption>
+                <img src="../code/image/high_cfg.png" alt="Image 1" width=800px height="auto">
+            </figure>
+
+            <h3>1.7 Image-to-image Translation</h3>
+            <p>By following the algorithm SDEdit, we can create a new image which is similar to the original image. I use 'a high quality photo' as the text prompst in the following 3 results</p>
+            <figure style="text-align: center;">
+                <figcaption>Campanile</figcaption>
+                <img src="../code/image/sdedit_1.png" alt="Image 1" width=1000px height="auto">
+            </figure>
+            <figure style="text-align: center;">
+                <figcaption>Cartoon capybara</figcaption>
+                <img src="../code/image/sdedit_2.png" alt="Image 1" width=1000px height="auto">
+            </figure>
+            <figure style="text-align: center;">
+                <figcaption>Landscape</figcaption>
+                <img src="../code/image/sdedit_3.png" alt="Image 1" width=1000px height="auto">
+            </figure>
+            <h4>1.7.1 Editing Hand-Drawn and Web Images</h4>
+            <p>The algorithm is effective at projecting non-realistic images onto the natural image manifold. In the following experiment, I will use one image sourced from the web and two hand-drawn images.</p>
+            <p>The web image of avocado</p>
+            <figure style="text-align: center;">
+                <img src="../code/image/web_1.png" alt="Image 1" width=1000px height="auto">
+            </figure>
+            <p>Hand-written images</p>
+            <figure style="text-align: center;">
+                <figcaption>a house and the sun</figcaption>
+                <img src="../code/image/draw_1.png" alt="Image 1" width=1000px height="auto">
+            </figure>
+            <figure style="text-align: center;">
+                <figcaption>a chair</figcaption>
+                <img src="../code/image/draw_2.png" alt="Image 1" width=1000px height="auto">
+            </figure>
+            <h4>1.7.2 Inpainting</h4>
+            <p>We can use a similar approach to implement inpainting, as described in the RePaint paper. We can create a new image that preserves the original content, while generating new content.</p>
+            <figure style="text-align: center;">
+                <figcaption>Campanile (text prompt: a high quality photo)</figcaption>
+                <img src="../code/image/inpaint1.png" alt="Image 1" width=800px height="auto">
+            </figure>
+            
+            <p>I use text prompt 'a dog is running on the grass' in the example below.</p>
+            <figure style="text-align: center;">
+                <figcaption>a dog is running on the grass</figcaption>
+                <img src="../code/image/inpaint2.png" alt="Image 1" width=800px height="auto">
+            </figure>
+            <p>I use text prompt 'a bear is sitting on the ground' in the example below.</p>
+            <figure style="text-align: center;">
+                <figcaption>a bear is sitting on the ground</figcaption>
+                <img src="../code/image/inpaint3.png" alt="Image 1" width=800px height="auto">
+            </figure>
+            <h4>1.7.3 Text-Conditional Image-to-image Translation</h4>
+            <p>This method allows to use text prompt to guide projection.</p>
+            <p>Text prompt: a rocket ship</p>
+            <figure style="text-align: center;">
+                <figcaption>Campanile</figcaption>
+                <img src="../code/image/rocket.png" alt="Image 1" width=1000px height="auto">
+            </figure>
+            <p>Text prompt: a rocket ship</p>
+            <figure style="text-align: center;">
+                <figcaption>My cup</figcaption>
+                <img src="../code/image/rocket2.png" alt="Image 1" width=1000px height="auto">
+            </figure>
+            <p>Text prompt: a lion is running on the grass</p>
+            <figure style="text-align: center;">
+                <figcaption>a running dog</figcaption>
+                <img src="../code/image/lion.png" alt="Image 1" width=1000px height="auto">
+            </figure>
+            <h3>1.8 Visual Anagrams</h3>
+            <p>By following the steps in Visual Anagrams, we can create optical illusions using diffusion models.</p>
+            <p>Example 1: an oil painting of an old man & an oil painting of people around a campfire</p>
+            <figure style="text-align: center;">
+                <img src="../code/image/flip1.png" alt="Image 1" width=1000px height="auto">
+            </figure>
+            <p>Example 2: an oil painting of a fruit bowl & an oil painting of a monkey</p>
+            <figure style="text-align: center;">
+                <img src="../code/image/flip2.png" alt="Image 1" width=1000px height="auto">
+            </figure>
+            <p>Example 3: a watercolor of a kitten & a watercolor of a puppy</p>
+            <figure style="text-align: center;">
+                <img src="../code/image/flip3.png" alt="Image 1" width=1000px height="auto">
+            </figure>
+            <h3>1.9 Hybrid Images</h3>
+            <p>In Factorized Diffusion, we can create a hybrid image by applying a high-pass filter and a low-pass filter separately to two noise and then combining the filtered results to get the final noise to generat image.</p>
+            <p>Example 1: a lithograph of a skull (low) & a lithograph of waterfalls(high)</p>
+            <figure style="text-align: center;">
+                <img src="../code/image/hybrid1.png" alt="Image 1" width=600px height="auto">
+                <img src="../code/image/hybrid1.png" alt="Image 1" width=50px height="auto">
+            </figure>
+            <p>Example 2: oil painting style of a tiger (low) & oil painting style of mountains(high)</p>
+            <figure style="text-align: center;">
+                <img src="../code/image/hybrid2.png" alt="Image 1" width=600px height="auto">
+                <img src="../code/image/hybrid2.png" alt="Image 1" width=50px height="auto">
+            </figure>
+            <p>Example 3: a watercolor of a pig (low) & a watercolor of a landscape (high)</p>
+            <figure style="text-align: center;">
+                <img src="../code/image/hybrid3.png" alt="Image 1" width=600px height="auto">
+                <img src="../code/image/hybrid3.png" alt="Image 1" width=50px height="auto">
+            </figure>
+            <h1>Part B: Diffusion Models from Scratch!</h1>
+            <h2>Part 1: Training a Single-Step Denoising UNet</h2>
+            <p>In this part, I follow the structure in the picture to build a U-Net and train it to denoise image by &sigma; = 0.5. I set batch size to 256, and training is conducted over 5 epochs. Besides, I use Adam optimizer for training with a learning rate of 1 × 10<sup>-4</sup>. Finally, I sample results on the test set after the first and the 5-th epoch and sample results on the test set with out-of-distribution noise levels</p>
+            <p>Visualiztion of the noisig process</p>
+            <figure style="text-align: center;">
+                <img src="../code/image/noise_on_MNIST.png" alt="Image 1" width=600px height="auto">
+            </figure>
+            <p>Traning loss curve</p>
+            <figure style="text-align: center;">
+                <img src="../code/image/loss1.png" alt="Image 1" width=600px height="auto">
+            </figure>
+            <p>Results from 1st epoch model and 5th epoch model</p>
+            <figure style="text-align: center;">
+                <img src="../code/image/1st Epoch.png" alt="Image 1" width=600px height="auto">
+            </figure>
+            <figure style="text-align: center;">
+                <img src="../code/image/5th Epoch.png" alt="Image 1" width=600px height="auto">
+            </figure>
+            <p>Sample results from test with out-distribution noise level</p>
+            <figure style="text-align: center;">
+                <img src="../code/image/denoise1.png" alt="Image 1" width=600px height="auto">
+            </figure>
+        </section>
+        <section>
+            <h2>Part 2: Training a Diffusion Model</h2>
+            <p>In this part, I implemeted DDPM and add an time-conditioning module to U-Net. For the training process, I set batch size to 128, and training is conducted over 20 epochs. Besides, I use Adam optimizer for training with a learning rate of 1 × 10<sup>-3</sup>, along with an exponential learning rate decay scheduler (gamma set to  0.1<sup>(1&frasl;num_epochs) )  </p>
+            <p>Training loss curve</p>
+            <figure style="text-align: center;">
+                <img src="../code/image/loss2.png" alt="Image 1" width=600px height="auto">
+            </figure>
+            <p>Sampling results for 5 and 20 epochs</p>
+            <figure style="text-align: center;">
+                <figcaption>5 epoch (click the image to see the animation)</figcaption>
+                <a href="../code/image/DDPM_5_full_grid_sample.gif" target="_blank">
+                    <img src="../code/image/DDPM_5_full_grid_sample.gif" alt="Image 1" width="600px" height="auto">
+                </a>
+            </figure>
+            <figure style="text-align: center;">
+                <figcaption>20 epoch (click the image to see the animation)</figcaption>
+                <a href="../code/image/DDPM_20_full_grid_sample.gif" target="_blank">
+                    <img src="../code/image/DDPM_20_full_grid_sample.gif" alt="Image 1" width="600px" height="auto">
+                </a>
+            </figure>
+        <p>Then, I implemented class-conditioning U-Net and trained it with same configuration with time-conditioning U-Net.</p>
+        <p>Training loss curve</p>
+        <figure style="text-align: center;">
+            <img src="../code/image/loss3.png" alt="Image 1" width=600px height="auto">
+        </figure>
+        <p>Sampling results for 5 and 20 epochs</p>
+        <figure style="text-align: center;">
+            <figcaption>5 epoch (click the image to see the animation)</figcaption>
+            <a href="../code/image/DDPM_5_class_grid_sample.gif" target="_blank">
+                <img src="../code/image/DDPM_5_class_grid_sample.gif" alt="Image 1" width="600px" height="auto">
+            </a>
+        </figure>
+        <figure style="text-align: center;">
+            <figcaption>20 epoch (click the image to see the animation)</figcaption>
+            <a href="../code/image/DDPM_20_class_grid_sample.gif" target="_blank">
+                <img src="../code/image/DDPM_20_class_grid_sample.gif" alt="Image 1" width="600px" height="auto">
+            </a>
+        </figure>
+       
+    </div>
+</body>
+</html>

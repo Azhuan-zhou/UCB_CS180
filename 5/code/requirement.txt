@@ -1,0 +1,13 @@
+torch
+torchvision
+diffusers 
+transformers 
+safetensors 
+sentencepiece 
+accelerate 
+bitsandbytes 
+einops 
+mediapy 
+accelerate
+huggingface_hub
+imageio
